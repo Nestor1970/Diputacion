@@ -3,7 +3,7 @@ name: Buscador Diputacion Coruña
 on:
   schedule:
     - cron: '30 8 * * 1-6' # Se ejecuta a las 8:30 AM de Lunes a Sábado
-  workflow_dispatch:      # Permite botón de ejecución manual
+  workflow_dispatch:      # Permite ejecución manual
 
 jobs:
   build:
@@ -18,7 +18,9 @@ jobs:
           python-version: '3.9'
 
       - name: Instalar librerias
-        run: pip install requests beautifulsoup4 python-docx
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 python-docx lxml
 
       - name: Ejecutar buscador Diputacion
         run: python buscador_diputacion.py
