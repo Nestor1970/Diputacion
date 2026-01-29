@@ -5,33 +5,32 @@ import re
 import os
 from docx import Document
 
-def rastreador_diputacion_total():
+def rastreador_diputacion_final():
     # 1. Configuración de archivos
     directorio = os.path.dirname(os.path.abspath(__file__))
     fecha_hoy_str = datetime.now().strftime("%d_%m_%Y")
     nombre_word = os.path.join(directorio, f"Diputacion_Coruna_{fecha_hoy_str}.docx")
     
-    print(f"\n--- 🏛️ VIGILANCIA TOTAL: DIPUTACIÓN + RRHH ---")
+    print(f"\n--- 🏛️ VIGILANCIA FILTRADA: DIPUTACIÓN (BOE) + RRHH (BOP/DOG) ---")
 
-    # FILTROS DE BÚSQUEDA
-    # "El Quién": Buscamos específicamente a la Diputación
-    terminos_entidad = [r"diputación provincial de a coruña", r"deputación da coruña"]
-    # "El Qué": Convocatorias, bases o movimientos de RRHH (Incluye tus añadidos)
-    terminos_bases = ["convocatoria", "bases", "proceso selectivo", "recursos humanos", "rrhh", 
-                      "oferta de empleo", "recursos humans", "oferta de emprego"]
+    # DEFINICIÓN DE FILTROS
+    entidad_cast = "diputación provincial de a coruña"
+    entidad_gal = "deputación da coruña"
+    
+    # Términos de Recursos Humanos (Castellano y Gallego)
+    rrhh_terminos = ["recursos humanos", "rrhh", "recursos humans", "oferta de empleo", "oferta de emprego", "proceso selectivo"]
 
     doc = Document()
-    doc.add_heading(f'Alertas Diputación A Coruña (BOE/DOG/BOP) - {datetime.now().strftime("%d/%m/%Y")}', 0)
+    doc.add_heading(f'Alertas Diputación A Coruña - {datetime.now().strftime("%d/%m/%Y")}', 0)
     
     anuncios_finales = []
     hoy = datetime.now()
 
-    # --- CAMBIO AQUÍ: De 7 a 15 días ---
-    for i in range(15):
+    # Rango de 7 días
+    for i in range(7):
         fecha = hoy - timedelta(days=i)
         f_str = fecha.strftime("%d/%m/%Y")
         
-        # Las 3 fuentes para cubrir la entrada en vigor
         urls = {
             "BOE": fecha.strftime("https://www.boe.es/boe/dias/%Y/%m/%d/"),
             "BOP Coruña": f"https://bop.dacoruna.gal/bopportal/cambioBoletin.do?fechaInput={f_str}",
@@ -45,22 +44,28 @@ def rastreador_diputacion_total():
                 res = requests.get(url, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
                 if res.status_code != 200: continue
 
-                # Usamos lxml para procesar las tablas de los diarios oficiales
                 sopa = BeautifulSoup(res.text, 'lxml')
                 
-                # Buscamos en todos los contenedores de texto posibles
                 for item in sopa.find_all(['li', 'p', 'tr', 'td']):
                     texto = item.get_text(separator=" ").strip()
                     if len(texto) < 40: continue
-                    
                     txt_min = texto.lower()
 
-                    # Lógica de doble validación: Entidad + Palabra Clave
-                    es_diputacion = any(re.search(t, txt_min) for t in terminos_entidad)
-                    es_interesante = any(b in txt_min for b in terminos_bases)
+                    encontrado = False
 
-                    if es_diputacion and es_interesante:
-                        # Evitamos guardar dos veces la misma línea
+                    # LÓGICA DIFERENCIADA POR FUENTE:
+                    if fuente == "BOE":
+                        # En el BOE: Solo que mencione a la Diputación
+                        if entidad_cast in txt_min or entidad_gal in txt_min:
+                            encontrado = True
+                    else:
+                        # En BOP y DOG: Entidad + Término de RRHH (Doble validación)
+                        tiene_entidad = (entidad_cast in txt_min or entidad_gal in txt_min)
+                        tiene_rrhh = any(r in txt_min for r in rrhh_terminos)
+                        if tiene_entidad and tiene_rrhh:
+                            encontrado = True
+
+                    if encontrado:
                         if not any(a['texto'] == texto for a in anuncios_finales):
                             anuncios_finales.append({
                                 'texto': texto, 
@@ -71,7 +76,7 @@ def rastreador_diputacion_total():
             except:
                 continue
 
-    # 3. Generación del documento si hay resultados
+    # 3. Guardado
     if anuncios_finales:
         for a in anuncios_finales:
             p = doc.add_paragraph()
@@ -81,9 +86,9 @@ def rastreador_diputacion_total():
             doc.add_paragraph("-" * 30)
         
         doc.save(nombre_word)
-        print(f"\n✅ ¡Localizados {len(anuncios_finales)} anuncios relevantes!")
+        print(f"\n✅ ¡Hecho! {len(anuncios_finales)} resultados guardados.")
     else:
-        print("\nℹ️ Sin novedades críticas de la Diputación en los últimos 15 días.")
+        print("\nℹ️ Sin novedades con estos filtros en los últimos 7 días.")
 
 if __name__ == "__main__":
-    rastreador_diputacion_total()
+    rastreador_diputacion_final()
