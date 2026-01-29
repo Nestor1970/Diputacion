@@ -2,7 +2,7 @@ name: Buscador Diputacion Coruña
 
 on:
   schedule:
-    - cron: '30 8 * * 1-6' # Se ejecuta a las 8:30 AM de Lunes a Sábado
+    - cron: '00 8 * * 1-6' # Se ejecuta a las 8:00 AM de Lunes a Sábado
   workflow_dispatch:      # Permite ejecución manual
 
 jobs:
