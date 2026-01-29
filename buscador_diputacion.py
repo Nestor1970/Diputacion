@@ -16,8 +16,9 @@ def rastreador_diputacion_total():
     # FILTROS DE BÚSQUEDA
     # "El Quién": Buscamos específicamente a la Diputación
     terminos_entidad = [r"diputación provincial de a coruña", r"deputación da coruña"]
-    # "El Qué": Convocatorias, bases o movimientos de RRHH
-    terminos_bases = ["convocatoria", "bases", "proceso selectivo", "recursos humanos", "rrhh", "oferta de empleo", "recursos humans", "oferta de emprego"]
+    # "El Qué": Convocatorias, bases o movimientos de RRHH (Incluye tus añadidos)
+    terminos_bases = ["convocatoria", "bases", "proceso selectivo", "recursos humanos", "rrhh", 
+                      "oferta de empleo", "recursos humans", "oferta de emprego"]
 
     doc = Document()
     doc.add_heading(f'Alertas Diputación A Coruña (BOE/DOG/BOP) - {datetime.now().strftime("%d/%m/%Y")}', 0)
@@ -25,12 +26,12 @@ def rastreador_diputacion_total():
     anuncios_finales = []
     hoy = datetime.now()
 
-    # Buscamos en los últimos 7 días
-    for i in range(7):
+    # --- CAMBIO AQUÍ: De 7 a 15 días ---
+    for i in range(15):
         fecha = hoy - timedelta(days=i)
         f_str = fecha.strftime("%d/%m/%Y")
         
-        # Las 3 fuentes que mencionas para cubrir la entrada en vigor
+        # Las 3 fuentes para cubrir la entrada en vigor
         urls = {
             "BOE": fecha.strftime("https://www.boe.es/boe/dias/%Y/%m/%d/"),
             "BOP Coruña": f"https://bop.dacoruna.gal/bopportal/cambioBoletin.do?fechaInput={f_str}",
@@ -82,7 +83,7 @@ def rastreador_diputacion_total():
         doc.save(nombre_word)
         print(f"\n✅ ¡Localizados {len(anuncios_finales)} anuncios relevantes!")
     else:
-        print("\nℹ️ Sin novedades críticas de la Diputación en la última semana.")
+        print("\nℹ️ Sin novedades críticas de la Diputación en los últimos 15 días.")
 
 if __name__ == "__main__":
     rastreador_diputacion_total()
