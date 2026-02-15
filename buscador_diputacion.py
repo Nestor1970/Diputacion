@@ -26,13 +26,14 @@ def rastreador_diputacion_final():
     anuncios_finales = []
     hoy = datetime.now()
 
-    # Rango de 7 días
-    for i in range(7):
+    # Rango de 3 días
+    for i in range(3):
         fecha = hoy - timedelta(days=i)
         f_str = fecha.strftime("%d/%m/%Y")
         
         urls = {
-            "BOE": fecha.strftime("https://www.boe.es/boe/dias/%Y/%m/%d/"),
+            "BOE": fecha.strftime("https://www.boe.es/boe/dias/%Y/%m/%d/index.php?s=2B"),
+            "BOE": fecha.strftime("https://www.boe.es/boe/dias/%Y/%m/%d/index.php?s=2A"),
             "BOP Coruña": f"https://bop.dacoruna.gal/bopportal/cambioBoletin.do?fechaInput={f_str}",
             "DOG": f"https://www.xunta.gal/diario-oficial-galicia/mostrarContenido.do?ruta=/{fecha.year}/{fecha.strftime('%Y%m%d')}/Secciones3_gl.html"
         }
