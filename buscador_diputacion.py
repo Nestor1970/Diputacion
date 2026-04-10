@@ -26,8 +26,8 @@ def rastreador_diputacion_final():
     anuncios_finales = []
     hoy = datetime.now()
 
-    # Rango de 3 días
-    for i in range(3):
+    # Rango de 4 días
+    for i in range(4):
         fecha = hoy - timedelta(days=i)
         f_str = fecha.strftime("%d/%m/%Y")
         
